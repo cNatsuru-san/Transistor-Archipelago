@@ -1,113 +1,183 @@
-from BaseClasses import Region, Tutorial
-from worlds.AutoWorld import World, WebWorld
-from .Items import TransistorItem, item_table
-from .Locations import TransistorLocation, location_table
-from .Options import TransistorOptions, Goal, EarlyVehicleKeys
+from typing import Dict, Any
+from BaseClasses import Region
+from worlds.AutoWorld import World
+from worlds.generic.Rules import set_rule
 
-
-class TransistorWeb(WebWorld):
-    theme = "ice"
-    tutorials = [Tutorial(
-        "Multiworld Setup Guide",
-        "Guia de configuracion para Transistor en Archipelago.",
-        "Español",
-        "setup_es.md",
-        "setup/es",
-        ["TransistorAP"]
-    )]
+from .items import (
+    TransistorItem,
+    ITEM_TABLE,
+    FUNCTION_ITEMS,
+    KEY_ITEMS,
+    LIMITER_ITEMS,
+)
+from .locations import (
+    TransistorLocation,
+    LOCATION_TABLE,
+    GOLDWALK_LOCATIONS,
+    HIGHRISE_LOCATIONS,
+    FAIRVIEW_LOCATIONS,
+    ROOFTOPS_LOCATIONS,
+    SHOWDOWN_LOCATIONS,
+    SANDBOX_LOCATIONS,
+)
+from .options import TransistorOptions
 
 
 class TransistorWorld(World):
+    """Transistor Archipelago World."""
     game = "Transistor"
-    web = TransistorWeb()
     options_dataclass = TransistorOptions
     options: TransistorOptions
 
-    item_name_to_id = {name: data.code for name, data in item_table.items()}
-    location_name_to_id = {name: data.code for name, data in location_table.items()}
+    item_name_to_id = {name: data.code for name, data in ITEM_TABLE.items()}
+    location_name_to_id = LOCATION_TABLE
+
+    item_name_groups = {
+        "Functions": set(FUNCTION_ITEMS),
+        "Keys": set(KEY_ITEMS),
+        "Limiters": set(LIMITER_ITEMS),
+    }
+
+    def _sandbox_enabled(self) -> bool:
+        return bool(self.options.include_sandbox.value) or self.options.goal.value == 1
+
+    def create_item(self, name: str) -> TransistorItem:
+        data = ITEM_TABLE[name]
+        return TransistorItem(name, data.classification, data.code, self.player)
 
     def create_regions(self) -> None:
         menu = Region("Menu", self.player, self.multiworld)
         goldwalk = Region("Goldwalk", self.player, self.multiworld)
         highrise = Region("Highrise", self.player, self.multiworld)
         fairview = Region("Fairview", self.player, self.multiworld)
-        canals = Region("Canals", self.player, self.multiworld)
+        rooftops = Region("Rooftops", self.player, self.multiworld)
+        showdown = Region("Showdown", self.player, self.multiworld)
 
-        regiones = {
-            "Goldwalk": goldwalk,
-            "Highrise": highrise,
-            "Fairview": fairview,
-            "Canals": canals
-        }
+        self.multiworld.regions.extend([menu, goldwalk, highrise, fairview, rooftops, showdown])
 
-        for loc_name, loc_data in location_table.items():
-            reg = regiones[loc_data.region]
-            reg.locations.append(TransistorLocation(self.player, loc_name, loc_data.code, reg))
+        for name, loc_id in GOLDWALK_LOCATIONS.items():
+            goldwalk.locations.append(TransistorLocation(self.player, name, loc_id, goldwalk))
+        for name, loc_id in HIGHRISE_LOCATIONS.items():
+            highrise.locations.append(TransistorLocation(self.player, name, loc_id, highrise))
+        for name, loc_id in FAIRVIEW_LOCATIONS.items():
+            fairview.locations.append(TransistorLocation(self.player, name, loc_id, fairview))
+        for name, loc_id in ROOFTOPS_LOCATIONS.items():
+            rooftops.locations.append(TransistorLocation(self.player, name, loc_id, rooftops))
+        for name, loc_id in SHOWDOWN_LOCATIONS.items():
+            showdown.locations.append(TransistorLocation(self.player, name, loc_id, showdown))
 
         menu.connect(goldwalk)
-        goldwalk.connect(highrise, "Motorcycle Ride", lambda state: state.has("Motorcycle Key", self.player))
-        highrise.connect(fairview, "Skyway Ferry", lambda state: state.has("Skyway Ferry Ticket", self.player))
-        fairview.connect(canals, "Canal Boat", lambda state: state.has("Canal Boat Key", self.player))
+        goldwalk.connect(highrise, "Goldwalk to Highrise")
+        highrise.connect(fairview, "Highrise to Fairview")
+        fairview.connect(rooftops, "Fairview to Rooftops")
+        rooftops.connect(showdown, "Rooftops to Showdown")
 
-        self.multiworld.regions.extend([menu, goldwalk, highrise, fairview, canals])
-
-    def create_item(self, name: str) -> TransistorItem:
-        data = item_table[name]
-        return TransistorItem(name, data.classification, data.code, self.player)
+        if self._sandbox_enabled():
+            sandbox = Region("Sandbox", self.player, self.multiworld)
+            self.multiworld.regions.append(sandbox)
+            for name, loc_id in SANDBOX_LOCATIONS.items():
+                sandbox.locations.append(TransistorLocation(self.player, name, loc_id, sandbox))
+            # El acceso al Sandbox (Puertas Traseras) se abre tras Highrise / Sybil
+            highrise.connect(sandbox, "Highrise to Sandbox")
 
     def create_items(self) -> None:
         pool = []
-        keys_mode = self.options.vehicle_keys_mode.value
-        llaves = ["Motorcycle Key", "Skyway Ferry Ticket", "Canal Boat Key"]
 
-        for name, data in item_table.items():
-            if data.category == "WEAPON":
-                pool.append(self.create_item(name))
-            elif data.category == "KEY":
-                if keys_mode == EarlyVehicleKeys.option_start_with_keys:
-                    self.multiworld.push_precollected(self.create_item(name))
-                else:
-                    pool.append(self.create_item(name))
-            elif data.category == "LIMITER" and self.options.shuffle_limiters.value:
-                pool.append(self.create_item(name))
+        # 2 funciones iniciales garantizadas al comenzar
+        starting_funcs = self.random.sample(FUNCTION_ITEMS, 2)
+        for func in starting_funcs:
+            self.multiworld.push_precollected(self.create_item(func))
 
-        # Si el jugador eligio early_items (por defecto), garantizamos que las llaves salgan en esfera 1
-        if keys_mode == EarlyVehicleKeys.option_early_items:
-            for llave in llaves:
-                self.multiworld.early_items[self.player][llave] = 1
+        # Las otras 14 funciones entran al pool
+        for func in FUNCTION_ITEMS:
+            if func not in starting_funcs:
+                pool.append(self.create_item(func))
 
-        # Completamos hasta los 48 checks con mejoras de MEM y Pasivas
-        total_checks = len(location_table)
-        extras = ["+2 MEM Capacity", "Passive Slot Unlock"]
-        i = 0
-        while len(pool) < total_checks:
-            pool.append(self.create_item(extras[i % len(extras)]))
-            i += 1
+       # 3 llaves de progreso (randomizadas o pre-entregadas según options.require_keys)
+        for key in KEY_ITEMS:
+            if self.options.require_keys.value:
+                pool.append(self.create_item(key))
+            else:
+                self.multiworld.push_precollected(self.create_item(key))
 
-        self.multiworld.itempool.extend(pool)
+        # Máximo 4 Passive Slot Unlock (límite real del juego)
+        for _ in range(4):
+            pool.append(self.create_item("Passive Slot Unlock"))
 
-    def pre_fill(self) -> None:
-        funciones_ofensivas = [
-            "Crash()", "Breach()", "Spark()", "Bounce()", "Load()",
-            "Cull()", "Get()", "Purge()", "Tap()", "Flood()"
-        ]
-        elegidas = self.random.sample(funciones_ofensivas, 2)
+        # 8 aumentos de +2 MEM (de 16 hasta 32 MEM)
+        for _ in range(8):
+            pool.append(self.create_item("+2 MEM Capacity"))
 
-        for idx, loc_name in enumerate(["Starting Function 1 (Crash)", "Starting Function 2 (Breach)"]):
-            nombre_func = elegidas[idx]
-            for item in list(self.multiworld.itempool):
-                if item.player == self.player and item.name == nombre_func:
-                    self.multiworld.itempool.remove(item)
-                    self.get_location(loc_name).place_locked_item(item)
-                    break
+        # 10 Limitadores
+        for lim in LIMITER_ITEMS:
+            pool.append(self.create_item(lim))
+
+        # Completar exactamente la cantidad de ubicaciones con relleno neutro
+        total_locations = len(self.multiworld.get_unfilled_locations(self.player))
+        while len(pool) < total_locations:
+            pool.append(self.create_item("Data Fragment"))
+
+        self.multiworld.itempool.extend(pool[:total_locations])
 
     def set_rules(self) -> None:
+        # Reglas de llaves + mínimo de funciones por región
+        set_rule(
+            self.multiworld.get_entrance("Goldwalk to Highrise", self.player),
+            lambda state: state.has("Motorcycle Key", self.player)
+            and state.has_group("Functions", self.player, 4),
+        )
+        set_rule(
+            self.multiworld.get_entrance("Highrise to Fairview", self.player),
+            lambda state: state.has("Skyway Ferry Ticket", self.player)
+            and state.has_group("Functions", self.player, 7),
+        )
+        set_rule(
+            self.multiworld.get_entrance("Fairview to Rooftops", self.player),
+            lambda state: state.has("Canal Boat Key", self.player)
+            and state.has_group("Functions", self.player, 10),
+        )
+        set_rule(
+            self.multiworld.get_entrance("Rooftops to Showdown", self.player),
+            lambda state: state.has_group("Functions", self.player, 12),
+        )
+
+        if self._sandbox_enabled():
+            set_rule(
+                self.multiworld.get_entrance("Highrise to Sandbox", self.player),
+                lambda state: state.has_group("Functions", self.player, 6),
+            )
+            # Pruebas finales del Sandbox requieren al menos 12 funciones
+            for test_name in [
+                "Sandbox - Speed Test 5",
+                "Sandbox - Stability Test 5",
+                "Sandbox - Planning Test 5",
+                "Sandbox - Performance Test 7",
+                "Sandbox - Agency Test 3",
+            ]:
+                set_rule(
+                    self.multiworld.get_location(test_name, self.player),
+                    lambda state: state.has_group("Functions", self.player, 12),
+                )
+
+        # Condición de victoria lógica según la meta elegida
         goal = self.options.goal.value
-        if goal == Goal.option_all_functions:
-            self.multiworld.completion_condition[self.player] = lambda state: all(
-                state.has(name, self.player) for name, d in item_table.items() if d.category == "WEAPON"
-            )
-        else:
+        if goal == 1:  # Sandbox
             self.multiworld.completion_condition[self.player] = (
-                lambda state: state.can_reach("Boss - Royce Bracket", "Location", self.player)
+                lambda state: state.can_reach("Sandbox", "Region", self.player)
+                and state.has_group("Functions", self.player, 12)
             )
+        elif goal == 2:  # Max Level
+            self.multiworld.completion_condition[self.player] = (
+                lambda state: state.can_reach("Showdown", "Region", self.player)
+            )
+        else:  # Royce Bracket
+            self.multiworld.completion_condition[self.player] = (
+                lambda state: state.can_reach("Showdown", "Region", self.player)
+            )
+
+    def fill_slot_data(self) -> Dict[str, Any]:
+        return {
+            "goal": self.options.goal.value,
+            "include_sandbox": self._sandbox_enabled(),
+            "require_keys": bool(self.options.require_keys.value),
+        }
