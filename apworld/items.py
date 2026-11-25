@@ -1,52 +1,76 @@
 from typing import Dict, NamedTuple
 from BaseClasses import Item, ItemClassification
 
+
 class TransistorItem(Item):
     game: str = "Transistor"
+
 
 class ItemData(NamedTuple):
     code: int
     classification: ItemClassification
-    internal_name: str
-    category: str
 
-item_table: Dict[str, ItemData] = {
-    # 16 Funciones
-    "Crash()":  ItemData(77001, ItemClassification.progression, "Slam",     "WEAPON"),
-    "Breach()": ItemData(77002, ItemClassification.progression, "Snipe",    "WEAPON"),
-    "Jaunt()":  ItemData(77003, ItemClassification.progression, "Blink",    "WEAPON"),
-    "Spark()":  ItemData(77004, ItemClassification.progression, "Bomb",     "WEAPON"),
-    "Bounce()": ItemData(77005, ItemClassification.progression, "Orb",      "WEAPON"),
-    "Load()":   ItemData(77006, ItemClassification.progression, "Launch",   "WEAPON"),
-    "Switch()": ItemData(77007, ItemClassification.progression, "Charm",    "WEAPON"),
-    "Mask()":   ItemData(77008, ItemClassification.progression, "Hide",     "WEAPON"),
-    "Ping()":   ItemData(77009, ItemClassification.progression, "Sidearm",  "WEAPON"),
-    "Help()":   ItemData(77010, ItemClassification.progression, "Summon",   "WEAPON"),
-    "Cull()":   ItemData(77011, ItemClassification.progression, "Uppercut", "WEAPON"),
-    "Get()":    ItemData(77012, ItemClassification.progression, "Hook",     "WEAPON"),
-    "Purge()":  ItemData(77013, ItemClassification.progression, "Tracker",  "WEAPON"),
-    "Tap()":    ItemData(77014, ItemClassification.progression, "Heal",     "WEAPON"),
-    "Flood()":  ItemData(77015, ItemClassification.progression, "Flusher",  "WEAPON"),
-    "Void()":   ItemData(77016, ItemClassification.progression, "Might",    "WEAPON"),
 
-    # 3 Llaves de Vehiculos (Progresion entre capitulos)
-    "Motorcycle Key":      ItemData(77020, ItemClassification.progression, "KEY_MOTO",  "KEY"),
-    "Skyway Ferry Ticket": ItemData(77021, ItemClassification.progression, "KEY_FERRY", "KEY"),
-    "Canal Boat Key":      ItemData(77022, ItemClassification.progression, "KEY_BOAT",  "KEY"),
+FUNCTION_ITEMS = [
+    "Crash()", "Breach()", "Jaunt()", "Spark()",
+    "Bounce()", "Load()", "Switch()", "Mask()",
+    "Ping()", "Help()", "Cull()", "Get()",
+    "Purge()", "Tap()", "Flood()", "Void()",
+]
 
-    # 10 Limitadores
-    "Limiter: Peace()":       ItemData(77030, ItemClassification.useful, "LimiterPeace",       "LIMITER"),
-    "Limiter: Void()":        ItemData(77031, ItemClassification.useful, "LimiterVoid",        "LIMITER"),
-    "Limiter: Cells()":       ItemData(77032, ItemClassification.useful, "LimiterCells",       "LIMITER"),
-    "Limiter: Process()":     ItemData(77033, ItemClassification.useful, "LimiterProcess",     "LIMITER"),
-    "Limiter: Choice()":      ItemData(77034, ItemClassification.useful, "LimiterChoice",      "LIMITER"),
-    "Limiter: Performance()": ItemData(77035, ItemClassification.useful, "LimiterPerformance", "LIMITER"),
-    "Limiter: Time()":        ItemData(77036, ItemClassification.useful, "LimiterTime",        "LIMITER"),
-    "Limiter: Function()":    ItemData(77037, ItemClassification.useful, "LimiterFunction",    "LIMITER"),
-    "Limiter: User()":        ItemData(77038, ItemClassification.useful, "LimiterUser",        "LIMITER"),
-    "Limiter: Risk()":        ItemData(77039, ItemClassification.useful, "LimiterRisk",        "LIMITER"),
+KEY_ITEMS = [
+    "Motorcycle Key",
+    "Skyway Ferry Ticket",
+    "Canal Boat Key",
+]
 
-    # Relleno util (MEM y Pasivas para cuadrar el total de checks)
-    "+2 MEM Capacity":        ItemData(77050, ItemClassification.useful, "MEM_PLUS_2",   "UPGRADE"),
-    "Passive Slot Unlock":    ItemData(77051, ItemClassification.useful, "PASSIVE_SLOT", "UPGRADE"),
+LIMITER_ITEMS = [
+    "Limiter: Risk()", "Limiter: Peace()", "Limiter: Time()",
+    "Limiter: Cells()", "Limiter: Process()", "Limiter: User()",
+    "Limiter: Void()", "Limiter: Overload()", "Limiter: Synergy()",
+    "Limiter: Agency()",
+]
+
+ITEM_TABLE: Dict[str, ItemData] = {
+    # 16 Funciones (Progression para que el generador respete los mínimos por región)
+    "Crash()":  ItemData(78001, ItemClassification.progression),
+    "Breach()": ItemData(78002, ItemClassification.progression),
+    "Jaunt()":  ItemData(78003, ItemClassification.progression),
+    "Spark()":  ItemData(78004, ItemClassification.progression),
+    "Bounce()": ItemData(78005, ItemClassification.progression),
+    "Load()":   ItemData(78006, ItemClassification.progression),
+    "Switch()": ItemData(78007, ItemClassification.progression),
+    "Mask()":   ItemData(78008, ItemClassification.progression),
+    "Ping()":   ItemData(78009, ItemClassification.progression),
+    "Help()":   ItemData(78010, ItemClassification.progression),
+    "Cull()":   ItemData(78011, ItemClassification.progression),
+    "Get()":    ItemData(78012, ItemClassification.progression),
+    "Purge()":  ItemData(78013, ItemClassification.progression),
+    "Tap()":    ItemData(78014, ItemClassification.progression),
+    "Flood()":  ItemData(78015, ItemClassification.progression),
+    "Void()":   ItemData(78016, ItemClassification.progression),
+
+    # Llaves de progreso
+    "Motorcycle Key":      ItemData(78051, ItemClassification.progression),
+    "Skyway Ferry Ticket": ItemData(78052, ItemClassification.progression),
+    "Canal Boat Key":      ItemData(78053, ItemClassification.progression),
+
+    # Mejoras útiles (con tope en create_items)
+    "+2 MEM Capacity":     ItemData(78061, ItemClassification.useful),
+    "Passive Slot Unlock": ItemData(78062, ItemClassification.useful),
+
+    # Limitadores
+    "Limiter: Risk()":     ItemData(78071, ItemClassification.filler),
+    "Limiter: Peace()":    ItemData(78072, ItemClassification.filler),
+    "Limiter: Time()":     ItemData(78073, ItemClassification.filler),
+    "Limiter: Cells()":    ItemData(78074, ItemClassification.filler),
+    "Limiter: Process()":  ItemData(78075, ItemClassification.filler),
+    "Limiter: User()":     ItemData(78076, ItemClassification.filler),
+    "Limiter: Void()":     ItemData(78077, ItemClassification.filler),
+    "Limiter: Overload()": ItemData(78078, ItemClassification.filler),
+    "Limiter: Synergy()":  ItemData(78079, ItemClassification.filler),
+    "Limiter: Agency()":   ItemData(78080, ItemClassification.filler),
+
+    # Relleno neutro para no saturar de Passive Slot Unlock
+    "Data Fragment":       ItemData(78099, ItemClassification.filler),
 }
