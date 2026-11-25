@@ -1,4 +1,4 @@
-# Transistor-Archipelago
+# Transistor Archipelago Randomizer (`v0.3.39`)
 Este es un randomizer para transistor mi juego favorito asi que si te sirve o solamente te gusta el juego estaria muy feliz de que lo probaras
 
 Como aclaracion este randomizer fue crado con inteligencia artificial como herramienta ya que no se programar pero queria hacer un randomizer / archipelago de mi juego favorito, por si llegan a haber errores, fallos o cosas fuera de mi control agradeceria que me lo hicieran saber para poder corregirlos
@@ -6,7 +6,7 @@ Como aclaracion este randomizer fue crado con inteligencia artificial como herra
 si es que no te agrada mucho como lo hice no hay mucho que pueda hacer la verdad ya que no se programar asi que lo siento por los inconveniente
 
 por lo demas espero que lo disfruten asi como yo me diverti en hacerlo
-Markdown# Transistor Archipelago Randomizer (`v3.39`)
+
 
 C# client mod and Archipelago world (`.apworld`) to play **Transistor** as a Multiworld Randomizer.
 
