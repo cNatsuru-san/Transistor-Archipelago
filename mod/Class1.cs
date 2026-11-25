@@ -244,7 +244,7 @@ namespace TransistorArchipelago
             if (yaIniciado) return;
             yaIniciado = true;
 
-            File.WriteAllText(rutaLog, "Transistor Archipelago v3.39 iniciado.\n");
+            File.WriteAllText(rutaLog, "Transistor Archipelago v0.3.39 iniciado.\n");
 
             Harmony harmony = new Harmony("com.transistor.archipelago");
             foreach (Type t in Assembly.GetExecutingAssembly().GetTypes())
