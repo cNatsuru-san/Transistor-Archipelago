@@ -66,4 +66,57 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>ebug|AnyCPU' ">
+<DebugSymbols>true</DebugSymbols>
+<DebugType>full</DebugType>
+<Optimize>false</Optimize>
+<OutputPath>bin\Debug\</OutputPath>
+<DefineConstants>DEBUG;TRACE</DefineConstants>
+<ErrorReport>prompt</ErrorReport>
+<WarningLevel>4</WarningLevel>
+</PropertyGroup>
+<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+<DebugType>pdbonly</DebugType>
+<Optimize>true</Optimize>
+<OutputPath>bin\Release\</OutputPath>
+<DefineConstants>TRACE</DefineConstants>
+<ErrorReport>prompt</ErrorReport>
+<WarningLevel>4</WarningLevel>
+</PropertyGroup>
+<ItemGroup>
+<Reference Include="0Harmony, Version=2.4.3.0, Culture=neutral, processorArchitecture=MSIL">
+<HintPath>..\packages\Lib.Harmony.2.4.3\lib\net472\0Harmony.dll</HintPath>
+</Reference>
+<Reference Include="Accessibility"/>
+<Reference Include="Archipelago.MultiClient.Net, Version=6.7.1.0, Culture=neutral, processorArchitecture=MSIL">
+<HintPath>..\packages\Archipelago.MultiClient.Net.6.7.1\lib\net45\Archipelago.MultiClient.Net.dll</HintPath>
+</Reference>
+<Reference Include="Engine">
+<HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Transistor\x64\Engine.dll</HintPath>
+</Reference>
+<Reference Include="MonoGame.Framework.Windows">
+<HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Transistor\x64\MonoGame.Framework.Windows.dll</HintPath>
+</Reference>
+<Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+<HintPath>..\packages\Archipelago.MultiClient.Net.6.7.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+</Reference>
+<Reference Include="System"/>
+<Reference Include="System.Core"/>
+<Reference Include="System.Drawing"/>
+<Reference Include="System.Drawing.Design"/>
+<Reference Include="System.Xml.Linq"/>
+<Reference Include="System.Data.DataSetExtensions"/>
+<Reference Include="Microsoft.CSharp"/>
+<Reference Include="System.Data"/>
+<Reference Include="System.Net.Http"/>
+<Reference Include="System.Xml"/>
+</ItemGroup>
+<ItemGroup>
+<Compile Include="Class1.cs"/>
+<Compile Include="Properties\AssemblyInfo.cs"/>
+</ItemGroup>
+<ItemGroup>
+<None Include="packages.config"/>
+</ItemGroup>
+<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
 </Project>
